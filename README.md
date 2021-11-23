@@ -1,6 +1,6 @@
-# Flagger4j
+# feature-with-flags
 
-Flagger4j is a typescript library to implement feature flags for javascript applications.
+feature-with-flags is a typescript library to implement feature flags for javascript applications. Name inspired from Sheldon Coopers fun with flags program.
 
 ## What are feature flags?
 
@@ -15,11 +15,11 @@ Install the package using npm or yarn by
 
 ```bash
 
-npm install --save @walmartlabs/flagger4j
+npm install --save feature-with-flags
 
 or
 
-yarn add @walmartlabs/flagger4j
+yarn add feature-with-flags
 
 ```
 
@@ -30,11 +30,11 @@ yarn add @walmartlabs/flagger4j
 
 # ES6
 
-import FeatureFlag from "@walmartlabs/flagger4j";
+import FeatureFlag from "feature-with-flags";
 
 # CommonJs
 
-const FeatureFlag = require('@walmartlabs/flagger4j');
+const FeatureFlag = require('feature-with-flags');
 
 ```
 
@@ -71,19 +71,13 @@ if(status) {
 ```
 ## Internals
 
-In this section, we will discuss the internals of Flagger4j library.
+In this section, we will discuss the internals of feature-with-flags library.
 #### Feature Flag Configurations Object
-
-Flagger4j accepts two types of objects as parameters at the time of initialization.
-
-Type1: Normal configuration Object
-
-Type2: Configuration from CCM2
 
 
 #### Type 1: normal configuration object
 
-Flagger4j expects feature flag configurations object in the below shape
+feature-with-flags expects feature flag configurations object in the below shape
 
  - Sample configuration
 ```javascript
@@ -105,161 +99,15 @@ Flagger4j expects feature flag configurations object in the below shape
   featureFlag1: {
    enable: true,
    activationStrategies: ['UserRoleActivationStrategy', 'ReleaseDateActivationStrategy'],
-   roles: ['REP_US_RSCPM', 'REP_US_PET']
+   roles: ['ROLE_1', 'ROLE_2']
   },
   featureFlag2: {
     enable: false,
     activationStrategies: "UserWithIDActivationStrategy",
-    userIDs: ['m0k05u9', 'abc', 'xyz'],
+    userIDs: ['USER_ID_1', 'abc', 'xyz'],
   },
    .... other feature flags
  }
-```
-
-#### Type 2: based on CCM2 configurations
- We suggest creating below like shape under configDefinitions in your ccm.yml file
-
-``` yaml
-# Sample example
-
-configDefinitions:
- "featureFlagsConfiguration": # This is the name of your feature flag configuration, can be anything
-    description: "My whole APP level feature flags live here" # description for the confi, can be anything
-    properties:
-    beta: # Name of the feature flag
-        description: "This feature will decide whether enable beta version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues: # Here you pass all the information related to the feature flag
-          - "enable: true"
-        
-```
-
-``` yaml
-# Complex example with two or more feature flags and activation strategies
-## We will talk more about the activation strategies in the below section don't worry for now
-
-configDefinitions:
- "featureFlagsConfiguration": # This is the name of your feature flag configuration, can be anything
-    description: "My whole APP level feature flags live here" # description for the confi, can be anything
-    properties:
-      beta: # Name of the feature flag
-        description: "This feature will decide whether enable beta version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues: # Here you pass all the information related to the feature flag
-          - "enable: true"
-
-       alpha: # Name of the feature flag
-        description: "This flag enables alpha version of the APP to the consumers"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues: 
-          - "enable: true"
-          - "activationStrategies: UserRoleActivationStrategy, ReleaseDateActivationStrategy" # dependent stratigies
-          - "userRoles: admin, prime" # This flag will be enabled only for these roles
-          - "releaseDate: 11/24/2022" # This should be release on or after this date (MM/DD/YYYY)
-        
-```
-
-Now the above complex example from CCM2 will look like below in your frontend apps
-
-```javascript
-
-configData: {
-  featureFlagConfig: {
-   "alpha":[
-         "enable: true",
-         "activationStrategies: UserRoleActivationStrategy, ReleaseDateActivationStrategy",
-          "userRoles: admin, phoenix",
-          "releaseDate: 11/24/2022"
-     ],
-    "beta":[
-         "enable: true"
-    ],
-  }
-}
-
-```
-
-Now pass the above featureFlagConfig to the flagger4j library
-
-```javascript
-
-## featureFlagConfig is config data from CCM2
-
-const featureFlagConfig = new FeatureFlag(featureFlagConfig);
-
-## Internally flagger4j library works on the shape of above passed in the config and converts it to the below shape
-
-{
-  alpha: {
-    enable: true,
-    activationStrategies: ["UserRoleActivationStrategy", "ReleaseDateActivationStrategy"],
-    userRoles:["admin", "phoenix"],
-    releaseDate: "11/24/2022"
-  },
-  beta:{
-   enable: true
-  }
-}
-
-```
-
-Now check the status of the feature flag as shown below
-
-```javascript
-const { isActive } = featureFlagConfig;
-
-## Check the status feature flag beta
-
-const { status, message } = isActive("beta") // Name of the feature flag to test
-
-## status will be true, since the beta feature flag has 'enabled' value as true
-## message will be null, since there is no error happened
-
-```
-
-
-The above sample code is for feature flags which are very straightforward just read the enable key value, but there are scenarios where you want the feature flag to be more granular, more tuned
-
-```javascript
-
-const { isActive } = featureFlagConfig;
-
-## Check the status feature flag alpha
-
-// This is a little complex since alpha is not as straightforward as beta. Alpha feature flag is more granular
-// ie it has some more extra data like activationStrategies in place (more about activation strategies in the below sections)
-// for the feature flags which are granular or which has activation strategies 
-
-// Flagger4j expects a second parameter called featureFlagContext to the isActive method
-
-// NOTE: The keys of featureFlagContext 'CANT' be any, each activation strategy requires one/more specif key in the context
-const featureFlagAlphaContext = {
- userRole: "admin" // You can read more about the 'keys' in below sections
-};
-const { status, message } = isActive("alpha");
-
-## Now internally flagger4j, looks at the activation strategies, config and context and returns the status & message
-
-## status will be true, since the alpha feature flag context(userRole='admin') is present in the config userRoles 
-## message will be null, since there is no error happened
-
-```
-
-```javascript
-## When the context object and config mismatches
-
-const featureFlagAlphaContext = {
- userRole: "tenant"
-};
-
-const { status, message } = isActive("alpha");
-
-## status will be false, since the alpha feature flag context(userRole=tenant) is not matched with the userRoles in config()
-## message will be `userRole: tenant is not found in userRoles, please check your configuration`
-
 ```
 
 #### Examples of feature flags which are very granual
@@ -282,28 +130,6 @@ ActivationStrategy implementation based on roles of the current user. As far as 
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: UserRoleActivationStrategy"
-          - "userRoles: admin, prime" # This key is must a provided for as UserRoleActivationStrategy looks for userRoles in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -328,7 +154,7 @@ When the featureFlag contains UserRoleActivationStrategy then the end user needs
  const { isActive } = featureFlagConfig;
  const featureFlagContext = {
   // This is a must provided key
-  userRole: 'LOGGED_IN_USER_ROLE' //flagger4j will take this key and lookover the userRoles provided in the configuration.
+  userRole: 'LOGGED_IN_USER_ROLE' //feature-with-flags will take this key and lookover the userRoles provided in the configuration.
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -340,28 +166,6 @@ ActivationStrategy implementation based on the ID of the current user. As far as
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: UserWithIDActivationStrategy"
-          - "userIDs: ID1, ID2" # This key is must a provided for as UserWithIDActivationStrategy looks for userIDs in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -386,7 +190,7 @@ When the featureFlag contains UserWithIDActivationStrategy then the end user nee
  const { isActive } = featureFlagConfig;
  const featureFlagContext = {
   // This is a must provided key
-  userID: 'LOGGED_IN_USER_ID' //flagger4j will take this key and lookover the userIDs provided in the configuration.
+  userID: 'LOGGED_IN_USER_ID' //feature-with-flags will take this key and lookover the userIDs provided in the configuration.
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -398,28 +202,6 @@ ActivationStrategy implementation based on the region of the current user. As fa
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: RegionActivationStrategy"
-          - "regions: region1, region2" # This key is must a provided for as RegionActivationStrategy looks for userID in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -444,7 +226,7 @@ When the featureFlag contains RegionActivationStrategy then the end user needs t
  const { isActive } = featureFlagConfig;
  const featureFlagContext = {
   // This is a must provided key
-  region: 'USER_REGION' //flagger4j will take this key and lookover the regions provided in the configuration.
+  region: 'USER_REGION' //feature-with-flags will take this key and lookover the regions provided in the configuration.
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -456,28 +238,6 @@ ActivationStrategy implementation based on the device type of the current user. 
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: DeviceTypeActivationStrategy"
-          - "deviceTypes: desktop, mobile" # This key is must a provided for as DeviceTypeActivationStrategy looks for deviceTypes in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -502,7 +262,7 @@ When the featureFlag contains DeviceTypeActivationStrategy then the end user nee
  const { isActive } = featureFlagConfig;
  const featureFlagContext = {
   // This is a must provided key
-  deviceType: navigator.userAgent //flagger4j will take this key and lookover the deviceTypes provided in the configuration.
+  deviceType: navigator.userAgent //feature-with-flags will take this key and lookover the deviceTypes provided in the configuration.
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -515,29 +275,6 @@ ActivationStrategy implementation based on the tenant id of the current user. As
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: TenantActivationStrategy"
-          - "tenantIDs: tenant1, tenant2" # This key is must a provided for as TenantActivationStrategy looks for tennatIDs in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
-
 ```javascript
 # sample example
 
@@ -561,7 +298,7 @@ When the featureFlag contains TenantActivationStrategy then the end user needs t
  const { isActive } = featureFlagConfig;
  const featureFlagContext = {
   // This is a must provided key
-  tenantID: "TENANT_ID //flagger4j will take this key and lookover the tenantIDs provided in the configuration.
+  tenantID: "TENANT_ID //feature-with-flags will take this key and lookover the tenantIDs provided in the configuration.
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -573,28 +310,6 @@ ActivationStrategy implementation based on the client id of the current user. As
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: ClientIdActivationStrategy"
-          - "clientIDs: client1, client2" # This key is must a provided for as ClientIdActivationStrategy looks for clientIDs in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -619,7 +334,7 @@ When the featureFlag contains ClientIdActivationStrategy then the end user needs
  const { isActive } = featureFlagConfig;
  const featureFlagContext = {
   // This is a must provided key
-  clientID: "CLIENT_ID //flagger4j will take this key and lookover the clientIDs provided in the configuration.
+  clientID: "CLIENT_ID //feature-with-flags will take this key and lookover the clientIDs provided in the configuration.
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -631,28 +346,6 @@ ActivationStrategy implementation based on the release date. When the current da
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: ReleaseDateActivationStrategy"
-          - "releaseDate: November 21, 2021" # Note: releaseDate should be in this format. This key is must a provided for as ReleaseDateActivationStrategy looks for releaseDate in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -683,30 +376,7 @@ ActivationStrategy implementation based on the release date with time. When the 
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
 
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: DateTimeActivationStrategy"
-          # Format: DD/MM/YYY/HOURS:MINUTES:SECONDS
-          - "releaseDateWithTime: 11/11/2021/16:50:10"
-          # Note: releaseDateWithTime should be in this format. This key is must a provided for as DateTimeActivationStrategy looks for releaseDateWithTime in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -738,33 +408,11 @@ ActivationStrategy implementation based on the unique id of the current user. As
 
 How does this strategy work?
 
-If you want to enable a feature for a fixed percentage of users randomly, you need to pass the percentage range (0 -100) and a unique identifier for each logged in user typically userID. Internally flagger4j calculates user threshold value (a unique number that is always the same based on feature flag name & unique user id) check with rolloutPercentage, if the user threshold value is less than rolloutPercentage then the feature will be active
+If you want to enable a feature for a fixed percentage of users randomly, you need to pass the percentage range (0 -100) and a unique identifier for each logged in user typically userID. Internally feature-with-flags calculates user threshold value (a unique number that is always the same based on feature flag name & unique user id) check with rolloutPercentage, if the user threshold value is less than rolloutPercentage then the feature will be active
 
 #### Usage
 
 ##### Configuration:
-###### - If using CCM2 to pass configuration
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-          - "activationStrategies: FlexibleRolloutActivationStrategy"
-          - "rolloutPercentage: 40" # This key is must a provided for as FlexibleRolloutActivationStrategy looks for rolloutPercentage in the config
-          - ....other configurations
-   
-```
-
-###### - If using normal configuration
 
 ```javascript
 # sample example
@@ -797,23 +445,7 @@ When the featureFlag contains FlexibleRolloutActivationStrategy then the end use
 
 ### default
 
-If the user didn't pass any activation strategy, flagger4j consider it as default activation strategy, the status of this feature flag will be depend on the `enabled` key.
-
-```yaml
-# sample example
-
-configDefinitions:
- "featureFlagsConfiguration":
-    description: "My whole APP level feature flags live here
-    properties:
-    alpha: # Name of the feature flag
-        description: "This feature will decide whether enable alpha version to the end users"
-        type: "STRING"
-        kind: "MULTI"
-        defaultValues:
-          - "enable: true"
-   
-```
+If the user didn't pass any activation strategy, feature-with-flags consider it as default activation strategy, the status of this feature flag will be depend on the `enabled` key.
 
 ###### - If using normal configuration
 
@@ -841,7 +473,7 @@ featureFlagConfigurations: {
 
 ## Generic error messages
 
-In this section, you will find all the types of messages flagger4j will send to the user when there is an error. This will help the developer to debug why the feature flag is not working as expected.
+In this section, you will find all the types of messages feature-with-flags will send to the user when there is an error. This will help the developer to debug why the feature flag is not working as expected.
 
 
 
@@ -879,7 +511,7 @@ Ex: userId: 123 is not found in userID's configuration
 
 ## Contact
 
-Contact @Manoj Kumar Gangavarapu (manoj.kumar1@walmart.com) in case of any queries.
+Contact @Manoj Kumar Gangavarapu (manoj.gangavarapuu@gmail.com) in case of any queries.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
