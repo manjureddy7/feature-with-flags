@@ -41,6 +41,7 @@ const FeatureFlag = require('feature-with-flags');
 Initialise FeatureFlag and pass feature flag configuration to it
 
 ```javascript
+
 const featureFlags = new FeatureFlag(FEATURE_FLAGS_CONFIGURATION);
 
 const { isActive } = featureFlags();
@@ -61,6 +62,8 @@ message is a null | string, a message if there's wrong with the passed in featur
 
 ```javascript
 # enable a feature by
+
+// If status is true, apply the new logic if not use the same existing logic
 
 if(status) {
   useNewLogic();
@@ -136,6 +139,7 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["UserRoleActivationStrategy"],
+
     userRoles:["admin", "phoenix"], //This key is must a provided for as UserRoleActivationStrategy looks for userRoles in the config,
     .... other configurations
   },
@@ -172,7 +176,9 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["UserWithIDActivationStrategy"],
+
     userIDs:["ID1", "ID2"], //This key is must a provided for as UserWithIDActivationStrategy looks for userIDs in the config,
+
     .... other configurations
   },
 }
@@ -185,10 +191,16 @@ When the featureFlag contains UserWithIDActivationStrategy then the end user nee
 
 ```javascript
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const featureFlagContext = {
-  // This is a must provided key
-  userID: 'LOGGED_IN_USER_ID' //feature-with-flags will take this key and lookover the userIDs provided in the configuration.
+
+    // This is a must provided key
+   // feature-with-flags will take this key and lookover the userIDs provided in the configuration.
+
+    userID: 'LOGGED_IN_USER_ID' 
+
  }
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
@@ -208,7 +220,9 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["RegionActivationStrategy"],
+
     regions:["region1", "region2"], //This key is must a provided for as RegionActivationStrategy looks for regions in the config,
+
     .... other configurations
   },
 }
@@ -220,12 +234,18 @@ featureFlagConfigurations: {
 When the featureFlag contains RegionActivationStrategy then the end user needs to pass the key `region` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const featureFlagContext = {
-  // This is a must provided key
-  region: 'USER_REGION' //feature-with-flags will take this key and lookover the regions provided in the configuration.
- }
+     // This is a must provided key
+    //feature-with-flags will take this key and lookover the regions provided in the configuration.
+
+    region: 'USER_REGION'
+ };
+
  const { status, message } = isActive("alpha", featureFlagContext);
 ```
 
@@ -244,7 +264,10 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["DeviceTypeActivationStrategy"],
-    deviceTypes:["desktop", "mobile"], // This key is must a provided for as DeviceTypeActivationStrategy looks for deviceTypes in the config,
+
+   // This key is must a provided for as DeviceTypeActivationStrategy looks for deviceTypes in the config,
+    deviceTypes:["desktop", "mobile"], 
+
     .... other configurations
   },
 }
@@ -256,13 +279,19 @@ featureFlagConfigurations: {
 When the featureFlag contains DeviceTypeActivationStrategy then the end user needs to pass the key `deviceType` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const featureFlagContext = {
+
   // This is a must provided key
   deviceType: navigator.userAgent //feature-with-flags will take this key and lookover the deviceTypes provided in the configuration.
- }
+ };
+
  const { status, message } = isActive("alpha", featureFlagContext);
+
 ```
 
 
@@ -280,7 +309,10 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["TenantActivationStrategy"],
-    tenantIDs:["tenant1", "tenant2"], // This key is must a provided for as TenantActivationStrategy looks for tenantIDs in the config,
+
+    // This key is must a provided for as TenantActivationStrategy looks for tenantIDs in the config,
+    tenantIDs:["tenant1", "tenant2"],
+
     .... other configurations
   },
 }
@@ -292,13 +324,20 @@ featureFlagConfigurations: {
 When the featureFlag contains TenantActivationStrategy then the end user needs to pass the key `tenantID` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const featureFlagContext = {
-  // This is a must provided key
-  tenantID: "TENANT_ID //feature-with-flags will take this key and lookover the tenantIDs provided in the configuration.
- }
+
+    // This is a must provided key
+   //feature-with-flags will take this key and lookover the tenantIDs provided in the configuration.
+  tenantID: "TENANT_ID"
+ };
+
  const { status, message } = isActive("alpha", featureFlagContext);
+
 ```
 
 ### ClientIdActivationStrategy
@@ -316,7 +355,10 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["ClientIdActivationStrategy"],
-    clientIDs:["client1", "client2"], // This key is must a provided for as ClientIdActivationStrategy looks for clientIDs in the config,
+
+    // This key is must a provided for as ClientIdActivationStrategy looks for clientIDs in the config,
+    clientIDs:["client1", "client2"],
+
     .... other configurations
   },
 }
@@ -328,13 +370,21 @@ featureFlagConfigurations: {
 When the featureFlag contains ClientIdActivationStrategy then the end user needs to pass the key `clientID` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const featureFlagContext = {
-  // This is a must provided key
-  clientID: "CLIENT_ID //feature-with-flags will take this key and lookover the clientIDs provided in the configuration.
- }
+
+   // This is a must provided key
+  //feature-with-flags will take this key and lookover the clientIDs provided in the configuration.
+  clientID: "CLIENT_ID"
+
+ };
+
  const { status, message } = isActive("alpha", featureFlagContext);
+
 ```
 
 ### ReleaseDateActivationStrategy
@@ -349,10 +399,13 @@ ActivationStrategy implementation based on the release date. When the current da
 # sample example
 
 featureFlagConfigurations: {
+
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["ReleaseDateActivationStrategy"],
-    releaseDate: "November 21, 2021, // Note: releaseDate should be in this format. This key is must a provided for as ReleaseDateActivationStrategy looks for releaseDate in the config,
+
+    releaseDate: "November 21, 2021", // Note: releaseDate should be in this format. This key is must a provided for as ReleaseDateActivationStrategy looks for releaseDate in the config,
+
     .... other configurations
   },
 }
@@ -362,9 +415,13 @@ featureFlagConfigurations: {
 ##### Context:
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const { status, message } = isActive("alpha");
+
 ```
 
 ### DateTimeActivationStrategy
@@ -383,8 +440,11 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["DateTimeActivationStrategy"],
+
     // Format: DD/MM/YYY/HOURS:MINUTES:SECONDS
-    releaseDateWithTime: "11/11/2021/16:50:10, // Note: releaseDateWithTime should be in this format. This key is must a provided for as DateTimeActivationStrategy looks for releaseDateWithTime in the config,
+    releaseDateWithTime: "11/11/2021/16:50:10,
+   // Note: releaseDateWithTime should be in this format. This key is must a provided for as DateTimeActivationStrategy looks for releaseDateWithTime in the config,
+
     .... other configurations
   },
 }
@@ -394,9 +454,13 @@ featureFlagConfigurations: {
 ##### Context:
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const { status, message } = isActive("alpha");
+
 ```
 
 
@@ -419,7 +483,9 @@ featureFlagConfigurations: {
   alpha: { // Name of the feature flag
     enable: true,
     activationStrategies: ["FlexibleRolloutActivationStrategy"],
+
     rolloutPercentage: 40, // This key is must a provided for as FlexibleRolloutActivationStrategy looks for rolloutPercentage in the config,
+
     .... other configurations
   },
 }
@@ -431,13 +497,20 @@ featureFlagConfigurations: {
 When the featureFlag contains FlexibleRolloutActivationStrategy then the end user needs to pass a unique identifier `userID` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
+
  const featureFlagContext = {
+
   // This is a must provided key
   userID: "ANY_UNIQUE_IDENTIFIER_ACROSS_USERS"
+
  }
+
  const { status, message } = isActive("alpha", featureFlagContext);
+
 ```
 
 
@@ -463,9 +536,11 @@ featureFlagConfigurations: {
 ```javascript
 
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+
  const { isActive } = featureFlagConfig;
 
  const { status, message } = isActive("alpha");
+
 ```
 
 
