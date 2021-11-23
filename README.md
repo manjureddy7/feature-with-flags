@@ -152,13 +152,19 @@ featureFlagConfigurations: {
 When the featureFlag contains UserRoleActivationStrategy then the end user needs to pass the key `userRole` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
+ 
  const { isActive } = featureFlagConfig;
+ 
  const featureFlagContext = {
+ 
   // This is a must provided key
   userRole: 'LOGGED_IN_USER_ROLE' //feature-with-flags will take this key and lookover the userRoles provided in the configuration.
+  
  }
  const { status, message } = isActive("alpha", featureFlagContext);
+ 
 ```
 
 ### UserWithIDActivationStrategy
@@ -190,6 +196,7 @@ featureFlagConfigurations: {
 When the featureFlag contains UserWithIDActivationStrategy then the end user needs to pass the key `userID` while checking the status.
 
 ```javascript
+
  const featureFlagConfig = new FeatureFlag("YOUR_FEATURE_FLAG_CONFIGURATION");
 
  const { isActive } = featureFlagConfig;
@@ -404,7 +411,8 @@ featureFlagConfigurations: {
     enable: true,
     activationStrategies: ["ReleaseDateActivationStrategy"],
 
-    releaseDate: "November 21, 2021", // Note: releaseDate should be in this format. This key is must a provided for as ReleaseDateActivationStrategy looks for releaseDate in the config,
+    // releaseDate should be in "November 21, 2021" or "12/26/2021" // MM/DD/YYYY format. 
+    releaseDate: "November 21, 2021", //This key is must a provided for as ReleaseDateActivationStrategy looks for releaseDate in the config,
 
     .... other configurations
   },
