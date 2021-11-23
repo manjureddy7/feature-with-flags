@@ -75,8 +75,6 @@ In this section, we will discuss the internals of feature-with-flags library.
 #### Feature Flag Configurations Object
 
 
-#### Type 1: normal configuration object
-
 feature-with-flags expects feature flag configurations object in the below shape
 
  - Sample configuration
